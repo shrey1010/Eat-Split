@@ -55,6 +55,8 @@ export default function App(){
         <FormSplitBill
           selectedFriend={selectedFriend}
           setSelectedFriend={setSelectedFriend}
+          setFriends={setFriends}
+          Friends={Friends}
         />
       )}
     </div>
@@ -152,22 +154,47 @@ function FormAddFriend({ setFriends, Friends, setShowAddFriend }) {
 }
 
 
-function FormSplitBill({ selectedFriend, setSelectedFriend }) {
+function FormSplitBill({ selectedFriend, setSelectedFriend,setFriends, Friends }) {
+  const [Bill, setBill] = useState("");
+  const [userExpense, setUserExpense] = useState("");
+  const [Payer, setPayer] = useState("user");
+  const paidByFriend = Bill ? Bill - userExpense : "";
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (!Bill || !userExpense || !Payer) return;
+    const value = Payer==='user'?paidByFriend:-paidByFriend
+    setFriends(Friends.map((friend)=>(friend.id===selectedFriend.id? {...friend,balance:(friend.balance+Number(value))}:friend)));
+    setSelectedFriend(null);
+  }
+
   return (
     <form className="form-split-bill">
       <h2>Split a bill with {selectedFriend.name}</h2>
       <label>💰 Bill Value</label>
-      <input type="text" />
+      <input
+        type="text"
+        value={Bill}
+        onChange={(e) => setBill(Number(e.target.value))}
+      />
       <label>🕴️ Your Expense</label>
-      <input type="text" />
+      <input
+        type="text"
+        value={userExpense}
+        onChange={(e) =>
+          setUserExpense(
+            Number(e.target.value) > Bill ? Number(userExpense) : e.target.value
+          )
+        }
+      />
       <label>🧑‍🤝‍🧑 {selectedFriend.name}'s Expense</label>
-      <input type="text" disabled />
+      <input type="text" disabled value={paidByFriend} />
       <label>😋Who is paying the bill </label>
-      <select>
+      <select value={Payer} onChange={(e) => setPayer(e.target.value)}>
         <option value="user">You</option>
         <option value="friend">{selectedFriend.name}</option>
       </select>
-      <button className="button" onClick={() => setSelectedFriend(null)}>
+      <button className="button" onClick={(e) => handleSubmit(e)}>
         Add
       </button>
     </form>
